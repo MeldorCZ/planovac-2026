@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import gspread
+import json
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
@@ -26,15 +27,12 @@ def compute_driver_status(row) -> str:
     return "CHYBÍ ŘIDIČ"
 
 def get_gspread_client():
-    # Streamlit Secrets: st.secrets["gcp_service_account"] je dict s obsahem JSON klíče
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
     ]
-    creds = Credentials.from_service_account_info(
-        st.secrets["gcp_service_account"],
-        scopes=scopes
-    )
+    info = json.loads(st.secrets["GCP_SERVICE_ACCOUNT_JSON"])
+    creds = Credentials.from_service_account_info(info, scopes=scopes)
     return gspread.authorize(creds)
 
 def sheet_to_df(ws):
@@ -71,7 +69,9 @@ def df_to_sheet(ws, df: pd.DataFrame):
         df[p] = df[p].apply(lambda x: "✓" if bool(x) else "")
 
     # Datum zpět na string
-    df["Datum"] = df["Datum"].apply(lambda d: d.strftime("%d.%m.%Y") if pd.notnull(d) and d != "" else "")
+    df["Datum"] = df["Datum"].apply(
+        lambda d: d.strftime("%d.%m.%Y") if pd.notnull(d) and d != "" else ""
+    )
 
     # přepočet řidiče (text)
     df["Řidič kontrola"] = df.apply(compute_driver_status, axis=1)
@@ -102,8 +102,14 @@ df = sheet_to_df(ws)
 
 # Editor
 col_config = {
-    "Práce": st.column_config.SelectboxColumn("Práce", options=["", "dovoz", "údržba", "Akce (TiC)", "Akce (externí)"]),
-    "Vozidlo": st.column_config.SelectboxColumn("Vozidlo", options=["", "Dodávka", "Osobní auto", "Žádné"]),
+    "Práce": st.column_config.SelectboxColumn(
+        "Práce",
+        options=["", "dovoz", "údržba", "Akce (TiC)", "Akce (externí)"]
+    ),
+    "Vozidlo": st.column_config.SelectboxColumn(
+        "Vozidlo",
+        options=["", "Dodávka", "Osobní auto", "Žádné"]
+    ),
 }
 
 for p in PEOPLE:
@@ -126,4 +132,3 @@ edited["Řidič kontrola"] = edited.apply(compute_driver_status, axis=1)
 if st.button("Uložit do Google Sheets"):
     df_to_sheet(ws, edited)
     st.success("Uloženo ✅")
-
