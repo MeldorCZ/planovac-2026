@@ -31,7 +31,7 @@ def get_gspread_client():
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
     ]
-    info = json.loads(st.secrets["GCP_SERVICE_ACCOUNT_JSON"].strip())
+    info = dict(st.secrets["gcp_service_account"])
     creds = Credentials.from_service_account_info(info, scopes=scopes)
     return gspread.authorize(creds)
 
