@@ -31,8 +31,7 @@ def get_gspread_client():
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
     ]
-    # tady už NEJSONujeme – Streamlit vrátí dict
-    info = st.secrets["gcp_service_account"]
+    info = json.loads(st.secrets["GCP_SERVICE_ACCOUNT_JSON"].strip())
     creds = Credentials.from_service_account_info(info, scopes=scopes)
     return gspread.authorize(creds)
 
