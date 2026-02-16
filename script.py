@@ -31,9 +31,11 @@ def get_gspread_client():
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
     ]
-    info = json.loads(st.secrets["GCP_SERVICE_ACCOUNT_JSON"])
+    # tady už NEJSONujeme – Streamlit vrátí dict
+    info = st.secrets["gcp_service_account"]
     creds = Credentials.from_service_account_info(info, scopes=scopes)
     return gspread.authorize(creds)
+
 
 def sheet_to_df(ws):
     values = ws.get_all_values()
