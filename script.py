@@ -5,6 +5,9 @@ import json
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
+st.write("SERVICE ACCOUNT:", st.secrets["gcp_service_account"].get("client_email"))
+st.write("SHEET_ID:", SHEET_ID)
+
 MONTHS = ["Leden","Únor","Březen","Duben","Květen","Červen",
           "Červenec","Srpen","Září","Říjen","Listopad","Prosinec"]
 
